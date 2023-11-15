@@ -1,14 +1,16 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 set -euo pipefail
 # shellcheck source=./framework.sh
 source "${BASE_DIR}/framework.sh"
 
-cores="$(sensors | awk '/Core/ { print substr($3, 2, length($3) - 3), substr($6, 2, length($6) - 4), substr($9, 2, length($9) - 4) }')"
+cores="$(sensors | grep 'Core')"
 
 text=""
 while IFS= read -r line; do
-    IFS=" " read -r current high critical <<< "${line}"
+    current=$(echo "${line}" | awk '{ print substr($3, 2, length($3) - 4) }')
+    high=$(echo "${line}" | awk '{ print substr($8, 2, length($8) - 4) }')
+    critical=$(echo "${line}" | awk '{ print substr($11, 2, length($11) - 4) }')
 
     if [[ "${high}" == "${critical}" ]]; then
         high=$(bc -l <<< "${high} - 20")
